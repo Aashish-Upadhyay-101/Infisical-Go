@@ -35,7 +35,7 @@ type ServiceTokenCredentials struct {
 
 type ServiceTokenClientConfig struct {
 	ClientConfig
-	authMode        string
-	credentials     ServiceTokenCredentials
-	workspaceConfig WorkspaceConfig
+	WorkspaceConfig
+	credentials ServiceTokenCredentials
+	authMode    string
 }

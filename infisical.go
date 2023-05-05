@@ -1,7 +1,7 @@
 package infisical
 
 import (
-	"errors"
+	"strings"
 )
 
 // this interface is the main API exposed by Infisical Go SDK
@@ -31,26 +31,38 @@ type client struct {
 }
 
 func InfisicalClient(token string) Client {
-	c, err := NewClientWithConfig(token, Config{})
-	if err != nil {
-
+	if token != "" {
+		c := NewClientWithConfig(token, Config{})
+		return c
 	}
-
-	return c
+	return nil
 }
 
-func NewClientWithConfig(token string, config Config) (Client, error) {
-	if token != "" {
-		c := client{
-			Config:   config,
-			token:    token,
-			siteURL:  INFISICAL_URL,
-			debug:    false,
-			cacheTTL: 300,
-		}
-		return c, nil
+func NewClientWithConfig(token string, config Config) Client {
+	lastDotIdx := strings.LastIndex(token, ".")
+	serviceToken := token[0:lastDotIdx]
+
+	config = Config{
+		clientConfig: ServiceTokenClientConfig{
+			authMode: AUTH_MODE_SERVICE_TOKEN,
+			credentials: ServiceTokenCredentials{
+				serviceTokenKey: token[lastDotIdx+1:],
+			},
+			ClientConfig: ClientConfig{
+				apiRequest: *CreateApiRequestWithAuthInterceptor(INFISICAL_URL, serviceToken),
+				cacheTTL:   config.clientConfig.cacheTTL,
+			},
+		},
 	}
-	return nil, errors.New("Token can't be empty")
+
+	c := client{
+		Config:   config,
+		token:    token,
+		siteURL:  INFISICAL_URL,
+		debug:    false,
+		cacheTTL: 300,
+	}
+	return c
 }
 
 func (c client) getAllSecrets() ([]SecretBundle, error) {
