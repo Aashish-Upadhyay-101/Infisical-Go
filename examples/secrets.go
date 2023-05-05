@@ -7,10 +7,6 @@ import (
 )
 
 func main() {
-	a := infisical.SecretBundle{
-		SecretName:  "API_KEY",
-		SecretValue: "whatisthis",
-	}
-
+	a := infisical.InfisicalClient("INFISICAL_SERVICE_TOKEN")
 	fmt.Println(a)
 }
